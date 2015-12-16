@@ -1,0 +1,195 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="Keywords" content="blog"/>
+    <meta name="Description" content="blog"/>
+    <title>Simple</title>
+    <link rel="shortcut icon" href="/static/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+<div class="main">
+    <div class="header">
+    	<ul id="pages">
+            <li><a href="/">home</a></li>
+            <li><a href="/#/tags">tags</a></li>
+            <li><a href="/#/archive">archive</a></li>
+    	</ul>
+    </div>
+	<div class="wrap-header">
+	<h1>
+    <a href="/" id="title"></a>
+	</h1>
+	</div>
+<div id="md" style="display: none;">
+<!-- markdown -->
+##  <font color=DodgerBlue>1.  Why we use Simulated Method of Moment(SMM)?</font> 
+
+When we use a Maximum Likelihood Estimation to estimate the parameters of a model, sometimes it's intractable to compute a direct expression of likelihood function to be maximised. 
+
+For example, with the following stochastic volatility (SV) model :
+
+$$
+y _t = e ^{\frac{h _t}{2}} u _t   , u _t \sim i.i.d \mathcal{N}(0,1) 
+$$
+$$
+h _t =  a + b h _{t-1} + \epsilon _t , \epsilon _t \sim i.i.d. \mathcal{N}(0,1)
+$$
+$$
+h _1 \sim \mathcal{N} (\frac{a}{1-b},\frac{\sigma^2}{1-b^2})
+$$
+$$
+u _t  \perp \epsilon _t
+$$
+
+
+the likelihood function is not easy to be calculated.
+ 
+So we try to use simulation methods to estimate the parameters.
+
+##  <font color=DodgerBlue>2.   Preliminary simulation-based methods</font> 
+
+
+Knowing the model $F_{\theta^*}$, we can generate a series of data $ y _1, y _2, ..., y _T$.
+
+Suppose that for every given $\theta$, it is possible to simulate a series of `Pseudo Data` from the model $F _{\theta}$:
+
+ $$
+\forall \theta \in \Theta^d, \exists [y _1(\theta), y _2(\theta), ..., y _T(\theta) ]\in \mathcal{Y}^T , s.t. \forall i , y _i(\theta) \sim F _{\theta} 
+$$ 
+
+The main problem now is:
+
+Choose the distance between the real model $F_{\theta^*}$ and the pseudo model $F _{\theta}$ so that the problem becomes a problem of minimisation of distance.
+
+##  <font color=DodgerBlue>3.  Moment calibration</font> 
+
+As for a stochastic model, the path is not unique, so we can't define the difference between two path of time series as a distance. 
+
+$$
+\underset{\theta}{min} \frac{1}{n}\sum _{i = 1}^{n}[y _i (\theta) - y _i]^2
+$$
+
+Too see it, imagine that we generate two series of random variables with the same law, maybe the difference of the two paths is very large.
+
+However, we may compare the difference of moments of two models as a distance : 
+
+$$
+\underset{\theta}{min} [\frac{1}{n}\sum _{i = 1}^{n}y _i (\theta) - \frac{1}{n}\sum _{i = 1}^{n}y _i]^2
+$$
+
+To see this, if {$Y_t$} is ergodic:
+
+$$
+{\theta} _\infty= \underset{\theta}{argmin}   \underset {n \to \infty}{lim}[\frac{1}{n}\sum _{i = 1}^{n}y _i (\theta) - \frac{1}{n}\sum _{i = 1}^{n}y _i]^2
+$$
+
+$$
+{\theta} _\infty= \underset{\theta}{argmin} \left[  \mathbb{E}[y  (\theta)] -  \mathbb{E}[y ] \right]^2
+$$
+
+
+The KKT conditions tell us:
+
+$$
+2 [ \mathbb{E}[y(\theta)] - \mathbb{E}[y] ] \frac{\partial  \mathbb{E}[y(\theta)]}{\partial \theta} \Bigm \vert _{\theta = \theta _\infty } = 0
+$$
+
+As long as $\mathbb{E}[y(\theta)] $ is injective of $\theta$, there's a unique solution of this equation and $\hat{\theta} \underset{n \to \infty}{\longrightarrow} \theta^*$
+
+Thus, we may use a Simulated Method of Moment to estimate parameters in model.
+
+##  <font color=DodgerBlue> 4.   Simulated Method of Moment</font> 
+
+For a series of real data {${y _t}$}$ _{t\in[0,T]}$ we may associate it with a r-dimensional (r $\geq$ d) moments : 
+$$H( [y _t] _{t\in[0,T]}) =\frac{1}{T}\sum _{t = 1}^{T} h ({y _t}) \in \mathbb{R}^r$$
+
+For every $\theta$, we can simulate a series of pseudo data, and associate it with the same moments:
+$$H _N( [y _i(\theta)] _{i\in[0,N]}) =\frac{1}{N}\sum _{i = 1}^{N} h ({y _i(\theta)}) \in \mathbb{R}^r$$
+
+The final solution can be expressed as:
+
+$$
+\hat\theta _ {SMM} = \underset{\theta}{argmin} [H _N(\theta)-H]^T \Omega [H _N(\theta)-H]
+$$
+
+where $\Omega$ is a symmetric, positive definite matrix with rank r. 
+
+<!-- markdown end -->
+</div>
+<div class="entry" id="main">
+<!-- content -->
+
+<!-- content end -->
+</div>
+<br>
+<br>
+    <div id="disqus_thread"></div>
+	<div class="footer">
+		<p>© Copyright 2014 by isnowfy, Designed by isnowfy</p>
+	</div>
+</div>
+<script src="main.js"></script>
+<script id="content" type="text/mustache">
+    <h1>{{title}}</h1>
+    <div class="tag">
+    {{date}}
+    {{#tags}}
+    <a href="/#/tag/{{name}}">#{{name}}</a>
+    {{/tags}}
+    </div>
+</script>
+<script id="pagesTemplate" type="text/mustache">
+    {{#pages}}
+    <li>
+        <a href="{{path}}">{{title}}</a>
+    </li>
+    {{/pages}}
+</script>
+<script>
+$(document).ready(function() {
+    $.ajax({
+        url: "main.json",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            $("#title").html(data.name);
+            var pagesTemplate = Hogan.compile($("#pagesTemplate").html());
+            var pagesHtml = pagesTemplate.render({"pages": data.pages});
+            $("#pages").append(pagesHtml);
+            //path
+            var path = "SMM.html";
+            //path end
+            var now = 0;
+            for (var i = 0; i < data.posts.length; ++i)
+                if (path == data.posts[i].path)
+                    now = i;
+            var post = data.posts[now];
+            var tmp = post.tags.split(" ");
+            var tags = [];
+            for (var i = 0; i < tmp.length; ++i)
+                if (tmp[i].length > 0)
+                    tags.push({"name": tmp[i]});
+            var contentTemplate = Hogan.compile($("#content").html());
+            var contentHtml = contentTemplate.render({"title": post.title, "tags": tags, "date": post.date});
+            $("#main").prepend(contentHtml);
+            if (data.disqus_shortname.length > 0) {
+                var disqus_shortname = data.disqus_shortname;
+                (function() {
+                    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+            }
+        }
+    });
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ["\\(", "\\)"]], processEscapes: true}});
+</script>
+</body>
+</html>
